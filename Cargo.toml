@@ -1,6 +1,6 @@
-[package]
-name = "IoT-Telemetry-Analytics-Platform"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
+[workspace]
+members = [
+    "src/kernel",
+    "src/services/ingestion",
+]
+resolver = "2"

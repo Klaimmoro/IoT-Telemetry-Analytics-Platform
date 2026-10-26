@@ -1,0 +1,24 @@
+[package]
+name = "ingestion_service"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+kernel = { path = "../../kernel" }
+
+# Асинхронный рантайм
+tokio = { version = "1.38", features = ["full"] }
+
+# Axum REST API
+axum = "0.7"
+
+# Драйвер Kafka
+rdkafka = { version = "0.39.0", features = ["tokio", "cmake-build"] }
+
+# Сериализация / десериализация
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Логирование
+tracing = "0.1"
+tracing-subscriber = "0.3"

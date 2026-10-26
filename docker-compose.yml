@@ -1,0 +1,48 @@
+services:
+  # Брокер сообщений Kafka
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: telemetry-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_NODE_ID: 1
+      
+      KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_OFFERS_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      
+      KAFKA_TOPIC_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_MIN_IN_SYNC_REPLICAS: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_IN_SYNC_REPLICAS: 1
+    healthcheck:
+      test: ["CMD", "kafka-cluster", "cluster-id", "--bootstrap-server", "localhost:9092"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    
+  ingestion:
+    build:
+      context: .
+      dockerfile: src/services/ingestion/Dockerfile
+    container_name: ingestion
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKERS: "${KAFKA_BROKERS}"
+      INGESTION_UDP_ADDR: "${INGESTION_UDP_ADDR}"
+      INGESTION_TCP_ADDR: "${INGESTION_TCP_ADDR}"
+    ports:
+      - "8080:8080/tcp"
+      - "8081:8081/udp"
